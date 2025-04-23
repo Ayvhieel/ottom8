@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>WhatsApp Status Scheduler</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    #response p {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>WhatsApp Status Scheduler</h1>
+  <form id="statusForm">
+    <div class="form-group">
+      <label for="status">Status Content:</label>
+      <textarea id="status" name="status" rows="4" required></textarea>
+    </div>
+    <div class="form-group">
+      <label for="scheduleTime">Schedule Date &amp; Time:</label>
+      <input type="datetime-local" id="scheduleTime" name="scheduleTime">
+      <small style="color:#666;">Leave blank to post immediately</small>
+    </div>
+    <button type="submit">Schedule Status</button>
+  </form>
+  <div id="response"></div>
+
+  <script>
+    document.getElementById('statusForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      btn.disabled = true;
+
+      const content = document.getElementById('status').value.trim();
+      const scheduleVal = document.getElementById('scheduleTime').value;
+      const scheduleTime = scheduleVal 
+        ? new Date(scheduleVal).toISOString() 
+        : null;
+
+      try {
+        const res = await fetch('https://hook.eu2.make.com/ljnjlenngadlv24uwrioqk2dr7sl25vi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content, scheduleTime, timestamp: new Date().toISOString() })
+        });
+
+        if (!res.ok) {
+          throw new Error(`Server returned ${res.status}`);
+        }
+
+        const data = await res.json();
+        let html = `<p style="color:${data.success ? 'green':'red'}">${data.message}</p>`;
+        if (data.success) {
+          html += scheduleTime
+            ? `<p style="color:green">Scheduled for ${new Date(scheduleTime).toLocaleString()}</p>`
+            : `<p style="color:green">Posted immediately</p>`;
+        }
+        document.getElementById('response').innerHTML = html;
+      } catch (err) {
+        document.getElementById('response').innerHTML =
+          `<p style="color:red">Error: ${err.message}</p>`;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
