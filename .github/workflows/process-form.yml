@@ -1,0 +1,17 @@
+name: Process Form Submission
+
+on:
+  repository_dispatch:
+    types: [form-submission]
+
+jobs:
+  process-form:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Forward to Make.com
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://hook.eu2.make.com/trrusuifym2bug8ctak8b9m826apvwhn'
+          method: 'POST'
+          contentType: 'application/json'
+          data: ${{ toJson(github.event.client_payload) }}
